@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#1e4a3b">
+<title>Swadanusar Cafe & Restaurant - Order</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --oat:#f6f1e6; --paper:#fffdf8; --ink:#211d1a; --muted:#6d6357; --line:#e2d8bf;
+    --green:#15120f; --green-dark:#0a0908; --butter:#c8a24d; --butter-light:#ecdcae;
+    --bad:#a13327; --veg:#2c7a4b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--oat);color:var(--ink);font-family:'Figtree',system-ui,-apple-system,sans-serif;}
+  h1,h2,h3,.display{font-family:'Playfair Display','Figtree',system-ui,sans-serif;}
+  button{font-family:inherit;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;} }
+  :focus-visible{outline:3px solid var(--green-dark); outline-offset:2px;}
+
+  .header{background:var(--green); color:var(--oat); padding:18px 16px 0;}
+  .header-top{display:flex; align-items:flex-start; justify-content:space-between; gap:12px;}
+  .restaurant-name{color:var(--butter); font-size:26px; margin:0; line-height:1.15;}
+  .subtitle{margin:4px 0 0; font-size:14px; opacity:.9;}
+  .table-tag{background:var(--butter); color:var(--green-dark); font-weight:700; font-size:13px; padding:6px 12px; border-radius:999px; white-space:nowrap;}
+  .friendly-line{margin:10px 0 14px; font-size:14px; opacity:.92;}
+  .awning{height:14px; background:radial-gradient(circle at 14px 0, var(--green) 13.6px, transparent 14px) 0 0/28px 14px repeat-x;}
+
+  .search-wrap{padding:12px 16px 0;}
+  .search-box{width:100%; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:var(--paper); font-size:16px; color:var(--ink);}
+  .search-box::placeholder{color:var(--muted);}
+
+  .chip-bar{display:flex; gap:8px; overflow-x:auto; padding:12px 16px; position:sticky; top:0; background:var(--oat); z-index:5; scrollbar-width:none;}
+  .chip-bar::-webkit-scrollbar{display:none;}
+  .chip{flex:0 0 auto; padding:8px 16px; border-radius:999px; border:1px solid var(--line); background:var(--paper); color:var(--ink); font-size:14px; font-weight:600; cursor:pointer;}
+  .chip.active{background:var(--green); color:var(--oat); border-color:var(--green);}
+
+  .category-section{padding:6px 16px 0;}
+  .category-title{font-size:19px; margin:18px 0 10px;}
+
+  .skeleton-row{display:flex; gap:12px; padding:12px; background:var(--paper); border-radius:16px; margin-bottom:10px;}
+  .skeleton-block{background:linear-gradient(90deg,var(--line) 25%, #ece1cc 37%, var(--line) 63%); background-size:400% 100%; animation:shimmer 1.4s ease infinite; border-radius:10px;}
+  @keyframes shimmer{0%{background-position:100% 0;}100%{background-position:0 0;}}
+
+  .dish-row{position:relative; display:flex; gap:12px; background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:12px; margin-bottom:10px;}
+  .dish-main{flex:1; min-width:0;}
+  .dish-name-row{display:flex; align-items:center; gap:6px;}
+  .veg-marker{width:14px; height:14px; border:1.5px solid var(--veg); border-radius:3px; flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;}
+  .veg-marker::after{content:""; width:7px; height:7px; border-radius:50%; background:var(--veg);}
+  .veg-marker.non-veg{border-color:var(--bad);}
+  .veg-marker.non-veg::after{background:var(--bad); border-radius:0; clip-path:polygon(50% 0,100% 100%,0 100%);}
+  .dish-name{font-weight:700; font-size:16px;}
+  .tag-pill{background:var(--butter-light); color:#6b4e12; font-size:11px; font-weight:700; padding:2px 8px; border-radius:999px;}
+  .dish-price{font-weight:700; margin:4px 0;}
+  .dish-desc{color:var(--muted); font-size:13px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .thumb-wrap{position:relative; width:104px; flex:0 0 104px;}
+  .thumb{width:104px; height:104px; border-radius:14px; object-fit:cover; background:var(--line);}
+  .thumb-tile{width:104px; height:104px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:34px; color:#fff;}
+  .thumb.sold-out, .thumb-tile.sold-out{filter:grayscale(100%); opacity:.6;}
+  .sold-out-text{color:var(--muted);}
+  .add-btn{position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); background:var(--green); color:var(--oat); border:none; border-radius:999px; padding:8px 18px; font-weight:700; font-size:13px; min-height:40px; cursor:pointer;}
+  .sold-out-pill{position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); background:var(--line); color:var(--muted); border-radius:999px; padding:8px 16px; font-size:12px; font-weight:700;}
+  .stepper{position:absolute; bottom:-10px; left:50%; transform:translateX(-50%); display:flex; align-items:center; gap:10px; background:var(--green); color:var(--oat); border-radius:999px; padding:6px 12px; min-height:40px;}
+  .stepper button{background:none; border:none; color:var(--oat); font-size:18px; font-weight:700; width:24px; height:24px; cursor:pointer;}
+  .stepper span{font-weight:700; min-width:14px; text-align:center;}
+
+  .cart-bar{position:fixed; left:16px; right:16px; bottom:16px; background:var(--green); color:var(--oat); border-radius:16px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; box-shadow:0 6px 20px rgba(0,0,0,.25); z-index:20; transition:transform .15s ease;}
+  .cart-bar.pop{transform:scale(1.03);}
+  .cart-info{font-weight:700; font-size:14px;}
+  .cart-info small{display:block; font-weight:400; opacity:.85; font-size:12px;}
+  .cart-btn{background:var(--butter); color:var(--green-dark); border:none; border-radius:999px; padding:10px 18px; font-weight:700; min-height:44px; cursor:pointer; font-size:14px;}
+
+  .sheet-backdrop{position:fixed; inset:0; background:rgba(20,15,10,.45); z-index:30; display:none;}
+  .sheet-backdrop.open{display:block;}
+  .sheet{position:fixed; left:0; right:0; bottom:0; background:var(--paper); border-radius:20px 20px 0 0; max-height:85vh; overflow-y:auto; z-index:31; transform:translateY(100%); transition:transform .22s ease; padding:18px 16px calc(18px + env(safe-area-inset-bottom));}
+  .sheet.open{transform:translateY(0);}
+  .sheet-handle{width:40px; height:4px; background:var(--line); border-radius:999px; margin:0 auto 14px;}
+  .sheet-title{font-size:20px; margin:0 0 12px;}
+  .line-item{display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--line);}
+  .line-item .li-name{font-weight:600; font-size:14px;}
+  .li-price{color:var(--muted); font-size:12px;}
+  .field-label{font-size:13px; font-weight:700; margin:16px 0 6px; display:block;}
+  .field-input{width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#fff; font-size:16px; color:var(--ink);}
+  .sheet-total{display:flex; justify-content:space-between; font-weight:700; font-size:16px; margin:16px 0;}
+  .btn-primary{width:100%; background:var(--green); color:var(--oat); border:none; border-radius:14px; padding:14px; font-weight:700; font-size:16px; min-height:48px; cursor:pointer;}
+  .btn-primary:disabled{opacity:.6;}
+  .btn-secondary{width:100%; background:transparent; color:var(--green); border:1.5px solid var(--green); border-radius:14px; padding:12px; font-weight:700; font-size:14px; min-height:44px; cursor:pointer; margin-top:8px;}
+
+  .toast{position:fixed; left:50%; bottom:100px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; z-index:40; opacity:0; transition:opacity .2s ease;}
+  .toast.show{opacity:1;}
+
+  .status-page{position:fixed; inset:0; background:var(--oat); z-index:50; overflow-y:auto; display:none;}
+  .status-page.open{display:block;}
+  .status-hero{background:var(--green); color:var(--oat); padding:32px 20px 0; text-align:center;}
+  .status-title{font-size:24px; margin:0 0 6px;}
+  .status-sub{font-size:13px; opacity:.85; margin:0 0 26px;}
+  .tracker{display:flex; padding:24px 16px 8px; gap:6px;}
+  .tracker-step{flex:1; text-align:center;}
+  .tracker-dot{width:30px; height:30px; border-radius:50%; background:var(--line); color:var(--muted); display:flex; align-items:center; justify-content:center; font-weight:700; margin:0 auto 6px; font-size:14px;}
+  .tracker-step.done .tracker-dot{background:var(--green); color:var(--oat);}
+  .tracker-step.active .tracker-dot{background:var(--butter); color:var(--green-dark);}
+  .tracker-label{font-size:12px; color:var(--muted); font-weight:600;}
+  .tracker-line{flex:1; height:2px; background:var(--line); margin-top:15px;}
+  .recap{background:var(--paper); margin:16px; border-radius:16px; padding:14px 16px; border:1px solid var(--line);}
+  .empty-state{text-align:center; color:var(--muted); padding:60px 20px; font-size:14px;}
+  .retry-btn{display:block; margin:12px auto; background:var(--green); color:var(--oat); border:none; border-radius:12px; padding:10px 20px; font-weight:700; cursor:pointer;}
+  .visually-hidden{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <h1 class="restaurant-name">Swadanusar Cafe &amp; Restaurant</h1>
+      <p class="subtitle">Pure vegetarian kitchen</p>
+    </div>
+    <span class="table-tag" id="tableTag" style="display:none;"></span>
+  </div>
+  <p class="friendly-line">Browse the menu and send your order straight to our kitchen.</p>
+</div>
+<div class="awning"></div>
+
+<div class="search-wrap">
+  <input type="search" id="searchBox" class="search-box" placeholder="Search dishes, categories...">
+</div>
+
+<div class="chip-bar" id="chipBar" role="tablist" aria-label="Menu categories"></div>
+
+<div id="menuContainer">
+  <div class="category-section">
+    <div class="skeleton-row"><div class="skeleton-block" style="width:60%;height:16px;"></div></div>
+    <div class="skeleton-row"><div class="skeleton-block" style="flex:1;height:104px;"></div><div class="skeleton-block" style="width:104px;height:104px;"></div></div>
+    <div class="skeleton-row"><div class="skeleton-block" style="flex:1;height:104px;"></div><div class="skeleton-block" style="width:104px;height:104px;"></div></div>
+  </div>
+</div>
+
+<div style="height:100px;"></div>
+
+<div class="cart-bar" id="cartBar" style="display:none;">
+  <div class="cart-info"><span id="cartCount">0</span> items<small id="cartTotal">Rs 0</small></div>
+  <button class="cart-btn" id="viewOrderBtn">View order</button>
+</div>
+
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="orderSheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-handle"></div>
+  <h2 class="sheet-title" id="sheetTitle">Your order</h2>
+  <div id="lineItems"></div>
+  <label class="field-label" for="tableInput">Table number</label>
+  <input type="text" id="tableInput" class="field-input" maxlength="10" placeholder="e.g. 5">
+  <label class="field-label" for="noteInput">Note for the kitchen (optional)</label>
+  <input type="text" id="noteInput" class="field-input" maxlength="200" placeholder="e.g. less spicy">
+  <div class="sheet-total"><span>Total</span><span id="sheetTotal">Rs 0</span></div>
+  <button class="btn-primary" id="sendOrderBtn">Send order to kitchen</button>
+</div>
+
+<div class="status-page" id="statusPage">
+  <div class="status-hero">
+    <h2 class="status-title" id="statusTitle">Order sent</h2>
+    <p class="status-sub" id="statusSub">We've got your order.</p>
+  </div>
+  <div class="awning"></div>
+  <div class="tracker" id="tracker"></div>
+  <div class="recap" id="recap"></div>
+  <div style="padding:0 16px;">
+    <button class="btn-secondary" id="orderAgainBtn">Order something else</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAldqc9pTZhF7I3XdDZaSWlgz7PAoOYHV8",
+  authDomain: "swadanusar-web.firebaseapp.com",
+  projectId: "swadanusar-web",
+  storageBucket: "swadanusar-web.firebasestorage.app",
+  messagingSenderId: "931212374660",
+  appId: "1:931212374660:web:b1ecb8735d36e37f43c8d1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ---------- state ----------
+let categories = [];      // [{id,name,order}]
+let dishes = [];          // [{id,...}]
+let cart = {};            // { dishId: qty }
+let searchTerm = "";
+let urlTable = null;
+let orderListenerUnsub = null;
+const TILE_COLORS = ["#d9c08a","#a7bfa0","#c98a6b","#8fa7ad"];
+
+// ---------- helpers ----------
+function rupee(n){ return "Rs " + Math.round(n); }
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function tileColorFor(name){
+  let h = 0;
+  for (let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) >>> 0;
+  return TILE_COLORS[h % TILE_COLORS.length];
+}
+
+// ---------- table from URL ----------
+(function initTable(){
+  const params = new URLSearchParams(window.location.search);
+  let t = params.get("table");
+  if (t){
+    t = t.trim().slice(0,10);
+    if (t){
+      urlTable = t;
+      const tag = document.getElementById("tableTag");
+      tag.style.display = "inline-block";
+      tag.textContent = "Table " + escapeHtml(t);
+    }
+  }
+})();
+
+// ---------- categories + menu listeners ----------
+let catsLoaded = false, menuLoaded = false;
+
+db.collection("categories").orderBy("order").onSnapshot(snap=>{
+  categories = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  catsLoaded = true;
+  renderChips();
+  renderMenu();
+}, err=>{ showLoadError(); });
+
+db.collection("menu").onSnapshot(snap=>{
+  dishes = snap.docs.map(d=>({id:d.id, ...d.data()}));
+  dishes.sort((a,b)=>(a.order??999)-(b.order??999));
+  menuLoaded = true;
+  checkCartAgainstStock();
+  renderChips();
+  renderMenu();
+}, err=>{ showLoadError(); });
+
+function showLoadError(){
+  document.getElementById("menuContainer").innerHTML =
+    '<div class="empty-state">Could not load the menu.<br><button class="retry-btn" onclick="location.reload()">Retry</button></div>';
+}
+
+function checkCartAgainstStock(){
+  let removed = false;
+  Object.keys(cart).forEach(id=>{
+    const dish = dishes.find(d=>d.id===id);
+    if (!dish || dish.available === false){
+      delete cart[id];
+      removed = true;
+    }
+  });
+  if (removed){
+    showToast("An item sold out and was removed from your order.");
+    renderCartBar();
+  }
+}
+
+// ---------- chips ----------
+function renderChips(){
+  if (!catsLoaded || !menuLoaded) return;
+  const bar = document.getElementById("chipBar");
+  const activeCats = categories.filter(c => dishes.some(d=>d.category===c.id));
+  bar.innerHTML = activeCats.map(c=>
+    `<button class="chip" data-cat="${escapeHtml(c.id)}" role="tab">${escapeHtml(c.name)}</button>`
+  ).join("");
+  bar.querySelectorAll(".chip").forEach(chip=>{
+    chip.addEventListener("click", ()=>{
+      const el = document.getElementById("cat-" + chip.dataset.cat);
+      if (el) el.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? "auto":"smooth", block:"start"});
+    });
+  });
+}
+
+// ---------- menu render ----------
+function renderMenu(){
+  if (!catsLoaded || !menuLoaded) return;
+  const term = searchTerm.trim().toLowerCase();
+  const container = document.getElementById("menuContainer");
+  let filtered = dishes.filter(d=>{
+    if (!term) return true;
+    return (d.name||"").toLowerCase().includes(term) ||
+           (d.description||"").toLowerCase().includes(term) ||
+           (categories.find(c=>c.id===d.category)?.name||"").toLowerCase().includes(term);
+  });
+
+  if (dishes.length === 0){
+    container.innerHTML = '<div class="empty-state">Menu is being set up. Please check back soon.</div>';
+    return;
+  }
+  if (filtered.length === 0){
+    container.innerHTML = '<div class="empty-state">No dishes match your search.</div>';
+    return;
+  }
+
+  let html = "";
+  const orderedCats = categories.filter(c=>filtered.some(d=>d.category===c.id));
+  orderedCats.forEach(cat=>{
+    const catDishes = filtered.filter(d=>d.category===cat.id);
+    if (!catDishes.length) return;
+    html += `<div class="category-section" id="cat-${escapeHtml(cat.id)}">`;
+    html += `<h2 class="category-title">${escapeHtml(cat.name)}</h2>`;
+    catDishes.forEach(d=> html += dishRowHtml(d));
+    html += `</div>`;
+  });
+  container.innerHTML = html;
+  attachRowHandlers();
+  renderCartBar();
+}
+
+function dishRowHtml(d){
+  const soldOut = d.available === false;
+  const qty = cart[d.id] || 0;
+  let vegMarker = "";
+  if (d.veg === true) vegMarker = '<span class="veg-marker" aria-label="Veg"></span>';
+  else if (d.veg === false) vegMarker = '<span class="veg-marker non-veg" aria-label="Non-veg"></span>';
+  const tag = d.tag ? `<span class="tag-pill">${escapeHtml(d.tag)}</span>` : "";
+
+  let thumb;
+  if (d.image){
+    thumb = `<img class="thumb${soldOut?' sold-out':''}" src="${d.image}" alt="${escapeHtml(d.name)}" loading="lazy">`;
+  } else {
+    thumb = `<div class="thumb-tile${soldOut?' sold-out':''}" style="background:${tileColorFor(d.name||'')}">${escapeHtml((d.name||'?').charAt(0).toUpperCase())}</div>`;
+  }
+
+  let control;
+  if (soldOut){
+    control = '<span class="sold-out-pill">Sold out</span>';
+  } else if (qty > 0){
+    control = `<div class="stepper" data-id="${d.id}">
+      <button class="dec" aria-label="Decrease quantity">-</button>
+      <span>${qty}</span>
+      <button class="inc" aria-label="Increase quantity">+</button>
+    </div>`;
+  } else {
+    control = `<button class="add-btn" data-id="${d.id}">Add</button>`;
+  }
+
+  return `<div class="dish-row">
+    <div class="dish-main">
+      <div class="dish-name-row">${vegMarker}<span class="dish-name">${escapeHtml(d.name||"")}</span></div>
+      ${tag}
+      <div class="dish-price">${rupee(d.price||0)}</div>
+      <div class="dish-desc${soldOut?' sold-out-text':''}">${escapeHtml(d.description||"")}</div>
+    </div>
+    <div class="thumb-wrap">${thumb}${control}</div>
+  </div>`;
+}
+
+function attachRowHandlers(){
+  document.querySelectorAll(".add-btn").forEach(btn=>{
+    btn.addEventListener("click", ()=>{ cart[btn.dataset.id] = 1; renderMenu(); });
+  });
+  document.querySelectorAll(".stepper").forEach(st=>{
+    const id = st.dataset.id;
+    st.querySelector(".inc").addEventListener("click", ()=>{ cart[id] = (cart[id]||0)+1; renderMenu(); });
+    st.querySelector(".dec").addEventListener("click", ()=>{
+      cart[id] = (cart[id]||0)-1;
+      if (cart[id] <= 0) delete cart[id];
+      renderMenu();
+    });
+  });
+}
+
+// ---------- search ----------
+document.getElementById("searchBox").addEventListener("input", e=>{
+  searchTerm = e.target.value;
+  renderMenu();
+});
+
+// ---------- sticky active chip on scroll ----------
+window.addEventListener("scroll", ()=>{
+  const sections = document.querySelectorAll(".category-section[id^='cat-']");
+  let currentId = null;
+  sections.forEach(sec=>{
+    const rect = sec.getBoundingClientRect();
+    if (rect.top <= 140) currentId = sec.id.replace("cat-","");
+  });
+  document.querySelectorAll(".chip").forEach(chip=>{
+    const active = chip.dataset.cat === currentId;
+    chip.classList.toggle("active", active);
+    if (active) chip.scrollIntoView({behavior:"auto", inline:"center", block:"nearest"});
+  });
+}, {passive:true});
+
+// ---------- cart bar ----------
+let lastCartCount = 0;
+function renderCartBar(){
+  const items = Object.entries(cart);
+  const count = items.reduce((s,[,q])=>s+q,0);
+  const total = items.reduce((s,[id,q])=>{
+    const d = dishes.find(x=>x.id===id);
+    return s + (d ? d.price*q : 0);
+  },0);
+  const bar = document.getElementById("cartBar");
+  if (count === 0){ bar.style.display = "none"; lastCartCount = 0; return; }
+  bar.style.display = "flex";
+  document.getElementById("cartCount").textContent = count;
+  document.getElementById("cartTotal").textContent = rupee(total);
+  if (count !== lastCartCount){
+    bar.classList.add("pop");
+    setTimeout(()=>bar.classList.remove("pop"), 180);
+  }
+  lastCartCount = count;
+}
+
+// ---------- order sheet ----------
+const sheetBackdrop = document.getElementById("sheetBackdrop");
+const orderSheet = document.getElementById("orderSheet");
+function openSheet(){
+  renderLineItems();
+  document.getElementById("tableInput").value = urlTable || "";
+  document.getElementById("tableInput").readOnly = !!urlTable;
+  sheetBackdrop.classList.add("open");
+  orderSheet.classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeSheet(){
+  sheetBackdrop.classList.remove("open");
+  orderSheet.classList.remove("open");
+  document.body.style.overflow = "";
+}
+document.getElementById("viewOrderBtn").addEventListener("click", openSheet);
+sheetBackdrop.addEventListener("click", closeSheet);
+document.addEventListener("keydown", e=>{ if (e.key === "Escape") closeSheet(); });
+
+function renderLineItems(){
+  const wrap = document.getElementById("lineItems");
+  const items = Object.entries(cart);
+  let total = 0;
+  wrap.innerHTML = items.map(([id,q])=>{
+    const d = dishes.find(x=>x.id===id);
+    if (!d) return "";
+    total += d.price*q;
+    return `<div class="line-item">
+      <div><div class="li-name">${escapeHtml(d.name)}</div><div class="li-price">${rupee(d.price)} each</div></div>
+      <div class="stepper" data-id="${id}" style="position:static;">
+        <button class="dec">-</button><span>${q}</span><button class="inc">+</button>
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("sheetTotal").textContent = rupee(total);
+  wrap.querySelectorAll(".stepper").forEach(st=>{
+    const id = st.dataset.id;
+    st.querySelector(".inc").addEventListener("click", ()=>{ cart[id]=(cart[id]||0)+1; renderLineItems(); renderMenu(); });
+    st.querySelector(".dec").addEventListener("click", ()=>{
+      cart[id]=(cart[id]||0)-1;
+      if (cart[id]<=0) delete cart[id];
+      renderLineItems(); renderMenu();
+      if (Object.keys(cart).length===0) closeSheet();
+    });
+  });
+}
+
+let sending = false;
+document.getElementById("sendOrderBtn").addEventListener("click", async ()=>{
+  if (sending) return;
+  const tableVal = document.getElementById("tableInput").value.trim().slice(0,10);
+  if (!tableVal){ showToast("Please enter a table number."); return; }
+  const items = Object.entries(cart).map(([id,q])=>{
+    const d = dishes.find(x=>x.id===id);
+    return { name: d.name, price: d.price, qty: q };
+  }).filter(Boolean);
+  if (items.length === 0){ showToast("Your cart is empty."); return; }
+  const total = items.reduce((s,it)=>s + it.price*it.qty, 0);
+  const note = document.getElementById("noteInput").value.trim().slice(0,200);
+
+  sending = true;
+  const btn = document.getElementById("sendOrderBtn");
+  btn.disabled = true; btn.textContent = "Sending...";
+  try{
+    const ref = await db.collection("orders").add({
+      table: tableVal,
+      items,
+      note,
+      total,
+      status: "new",
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    localStorage.setItem("swadanusar_order", JSON.stringify({ id: ref.id, table: tableVal, ts: Date.now() }));
+    cart = {};
+    closeSheet();
+    renderMenu();
+    openStatusPage(ref.id);
+  } catch(err){
+    showToast("Could not send order. Check your internet and try again.");
+  } finally {
+    sending = false;
+    btn.disabled = false; btn.textContent = "Send order to kitchen";
+  }
+});
+
+// ---------- status page ----------
+function openStatusPage(orderId){
+  document.getElementById("statusPage").classList.add("open");
+  if (orderListenerUnsub) orderListenerUnsub();
+  orderListenerUnsub = db.collection("orders").doc(orderId).onSnapshot(doc=>{
+    if (!doc.exists){
+      localStorage.removeItem("swadanusar_order");
+      closeStatusPage();
+      return;
+    }
+    renderStatus(doc.data(), orderId);
+  }, ()=>{ showToast("Connection lost. We'll keep trying."); });
+}
+function closeStatusPage(){
+  document.getElementById("statusPage").classList.remove("open");
+  if (orderListenerUnsub){ orderListenerUnsub(); orderListenerUnsub = null; }
+}
+function statusStep(status){
+  if (["done","ready","served"].includes(status)) return 3;
+  if (["confirmed","preparing"].includes(status)) return 2;
+  return 1;
+}
+function renderStatus(order, orderId){
+  const step = statusStep(order.status);
+  const titles = {1:"Order sent", 2:"Order confirmed", 3:"Enjoy your meal"};
+  const subs = {1:"We've got your order and the kitchen has been notified.", 2:"Your food is being prepared.", 3:"Hope you loved it!"};
+  document.getElementById("statusTitle").textContent = titles[step];
+  document.getElementById("statusSub").textContent = subs[step];
+
+  const labels = ["Received","Confirmed","Ready"];
+  let trackerHtml = "";
+  labels.forEach((label,i)=>{
+    const n = i+1;
+    const cls = n < step ? "done" : (n === step ? "active" : "");
+    trackerHtml += `<div class="tracker-step ${cls}"><div class="tracker-dot">${n<step?'&#10003;':n}</div><div class="tracker-label">${label}</div></div>`;
+    if (i < labels.length-1) trackerHtml += `<div class="tracker-line"></div>`;
+  });
+  document.getElementById("tracker").innerHTML = trackerHtml;
+
+  const itemsHtml = (order.items||[]).map(it=>
+    `<div class="line-item"><div class="li-name">${escapeHtml(it.name)} x${it.qty}</div><div class="li-price">${rupee(it.price*it.qty)}</div></div>`
+  ).join("");
+  document.getElementById("recap").innerHTML = itemsHtml +
+    `<div class="sheet-total"><span>Total</span><span>${rupee(order.total||0)}</span></div>`;
+
+  if (step === 3){
+    setTimeout(()=>{ localStorage.removeItem("swadanusar_order"); }, 500);
+  }
+}
+document.getElementById("orderAgainBtn").addEventListener("click", ()=>{
+  localStorage.removeItem("swadanusar_order");
+  closeStatusPage();
+});
+
+// ---------- restore order on load ----------
+(function restoreOrder(){
+  try{
+    const raw = localStorage.getItem("swadanusar_order");
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    const FOUR_HOURS = 4*60*60*1000;
+    if (Date.now() - saved.ts > FOUR_HOURS){
+      localStorage.removeItem("swadanusar_order");
+      return;
+    }
+    if (urlTable && saved.table !== urlTable){
+      localStorage.removeItem("swadanusar_order");
+      return;
+    }
+    openStatusPage(saved.id);
+  } catch(e){ localStorage.removeItem("swadanusar_order"); }
+})();
+</script>
+</body>
+</html>

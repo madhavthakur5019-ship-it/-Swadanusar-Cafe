@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#1e4a3b">
+<title>Kitchen orders - Swadanusar Cafe</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --oat:#f6f1e6; --paper:#fffdf8; --ink:#211d1a; --muted:#6d6357; --line:#e2d8bf;
+    --green:#15120f; --green-dark:#0a0908; --butter:#c8a24d; --butter-light:#ecdcae;
+    --bad:#a13327; --veg:#2c7a4b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--oat);color:var(--ink);font-family:'Figtree',system-ui,sans-serif;}
+  h1,h2,.display{font-family:'Playfair Display','Figtree',system-ui,sans-serif;}
+  button{font-family:inherit;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+  :focus-visible{outline:3px solid var(--green-dark); outline-offset:2px;}
+  .awning{height:14px; background:radial-gradient(circle at 14px 0, var(--green) 13.6px, transparent 14px) 0 0/28px 14px repeat-x;}
+
+  /* login */
+  .login-hero{background:var(--green); color:var(--oat); min-height:100vh; padding:60px 20px 0;}
+  .login-card{background:var(--paper); color:var(--ink); border-radius:18px; padding:24px 20px; margin:24px auto 0; max-width:360px;}
+  .login-title{font-size:24px; margin:0 0 4px; text-align:center; color:var(--butter);}
+  .login-sub{text-align:center; font-size:13px; opacity:.85; margin-bottom:18px;}
+  .field-label{font-size:13px; font-weight:700; display:block; margin:14px 0 6px;}
+  .field-input{width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line); font-size:16px; color:var(--ink);}
+  .btn-primary{width:100%; background:var(--green); color:var(--oat); border:none; border-radius:14px; padding:14px; font-weight:700; font-size:16px; min-height:48px; cursor:pointer; margin-top:18px;}
+  .btn-primary:disabled{opacity:.6;}
+  .error-text{color:#ffd9d1; font-size:13px; margin-top:10px; text-align:center;}
+  .error-text.on-card{color:var(--bad);}
+
+  /* board */
+  .header{background:var(--green); color:var(--oat); padding:16px;}
+  .header-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
+  .header-title{color:var(--butter); font-size:22px; margin:0;}
+  .status-dot-wrap{display:flex; align-items:center; gap:6px; font-size:12px; opacity:.9;}
+  .status-dot{width:8px; height:8px; border-radius:50%; background:var(--veg);}
+  .status-dot.offline{background:var(--bad);}
+  .tabs{display:flex; gap:8px; margin-top:14px;}
+  .tab{flex:1; text-align:center; padding:10px; border-radius:999px; background:rgba(255,255,255,.12); color:var(--oat); text-decoration:none; font-weight:700; font-size:13px;}
+  .tab.active{background:var(--butter); color:var(--green-dark);}
+  .toolbar{display:flex; gap:8px; margin-top:12px;}
+  .pill-btn{flex:1; padding:9px; border-radius:999px; border:1px solid rgba(255,255,255,.4); background:transparent; color:var(--oat); font-size:12px; font-weight:700; cursor:pointer; min-height:40px;}
+  .pill-btn.sound-on{background:var(--butter); color:var(--green-dark); border-color:var(--butter);}
+
+  .section{padding:16px;}
+  .section-title{display:flex; align-items:center; gap:8px; font-size:17px; margin:18px 0 10px;}
+  .count-badge{background:var(--green); color:var(--oat); border-radius:999px; font-size:12px; padding:2px 9px; font-weight:700;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px;}
+
+  .card{background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:14px; position:relative;}
+  .card.new-card{border-color:var(--green); box-shadow:0 0 0 3px var(--butter-light);}
+  .card.flash{animation:flashbg 2.4s ease;}
+  @keyframes flashbg{0%{background:var(--butter-light);}100%{background:var(--paper);}}
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start;}
+  .table-label{font-size:28px; margin:0;}
+  .age-chip{font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; background:var(--line); color:var(--ink);}
+  .age-chip.warn{background:var(--butter);}
+  .age-chip.danger{background:var(--bad); color:#fff;}
+  .clock-time{font-size:11px; color:var(--muted); margin-top:2px;}
+  .items-list{margin:10px 0;}
+  .item-line{display:flex; gap:8px; font-size:14px; padding:3px 0; align-items:baseline;}
+  .item-qty{font-weight:800; font-size:15px; min-width:26px;}
+  .price-mismatch{color:var(--bad); font-size:11px; font-weight:700; margin-left:4px;}
+  .note-box{background:var(--butter-light); border-radius:10px; padding:8px 10px; font-size:13px; margin:8px 0;}
+  .card-total{font-weight:700; margin:8px 0;}
+  .confirm-btn{width:100%; background:var(--green); color:var(--oat); border:none; border-radius:12px; padding:12px; font-weight:700; font-size:14px; min-height:48px; cursor:pointer;}
+  .confirm-btn:disabled{opacity:.6;}
+  .empty-state{text-align:center; color:var(--muted); padding:30px 20px; font-size:14px;}
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; z-index:40; opacity:0; transition:opacity .2s ease;}
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div id="loginView" class="login-hero">
+  <h1 class="login-title">Kitchen orders</h1>
+  <div class="login-card">
+    <p class="login-sub">Sign in to see live orders.</p>
+    <label class="field-label" for="loginEmail">Email</label>
+    <input type="email" id="loginEmail" class="field-input" autocomplete="username">
+    <label class="field-label" for="loginPass">Password</label>
+    <input type="password" id="loginPass" class="field-input" autocomplete="current-password">
+    <button class="btn-primary" id="loginBtn">Sign in</button>
+    <p class="error-text on-card" id="loginError" style="display:none;"></p>
+  </div>
+</div>
+<div class="awning" style="display:none;" id="loginAwning"></div>
+
+<div id="boardView" style="display:none;">
+  <div class="header">
+    <div class="header-row">
+      <h1 class="header-title">Kitchen orders</h1>
+      <div class="status-dot-wrap"><span class="status-dot" id="connDot"></span><span id="connText">Live</span></div>
+    </div>
+    <div class="tabs">
+      <span class="tab active">Orders</span>
+      <a class="tab" href="admin.html">Menu</a>
+    </div>
+    <div class="toolbar">
+      <button class="pill-btn" id="soundBtn">Sound off</button>
+      <button class="pill-btn" id="signOutBtn">Sign out</button>
+    </div>
+  </div>
+  <div class="awning"></div>
+
+  <div class="section">
+    <div class="section-title">New orders <span class="count-badge" id="newCount">0</span></div>
+    <div class="grid" id="newGrid"></div>
+    <div class="empty-state" id="newEmpty" style="display:none;">No new orders right now.</div>
+
+    <div class="section-title">Preparing <span class="count-badge" id="prepCount">0</span></div>
+    <div class="grid" id="prepGrid"></div>
+    <div class="empty-state" id="prepEmpty" style="display:none;">Nothing is being prepared.</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<audio id="beepAudio" preload="auto"></audio>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAldqc9pTZhF7I3XdDZaSWlgz7PAoOYHV8",
+  authDomain: "swadanusar-web.firebaseapp.com",
+  projectId: "swadanusar-web",
+  storageBucket: "swadanusar-web.firebasestorage.app",
+  messagingSenderId: "931212374660",
+  appId: "1:931212374660:web:b1ecb8735d36e37f43c8d1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function rupee(n){ return "Rs " + Math.round(n); }
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+// ---------- login ----------
+document.getElementById("loginBtn").addEventListener("click", async ()=>{
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  const errEl = document.getElementById("loginError");
+  errEl.style.display = "none";
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true; btn.textContent = "Signing in...";
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(err){
+    let msg = "Something went wrong. Please try again.";
+    if (!navigator.onLine) msg = "No internet connection.";
+    else if (["auth/wrong-password","auth/user-not-found","auth/invalid-credential","auth/invalid-email"].includes(err.code)) msg = "Wrong email or password.";
+    errEl.textContent = msg;
+    errEl.style.display = "block";
+  } finally {
+    btn.disabled = false; btn.textContent = "Sign in";
+  }
+});
+document.getElementById("signOutBtn").addEventListener("click", ()=> auth.signOut());
+
+let menuById = {};
+let menuUnsub = null, ordersUnsub = null;
+let soundOn = false;
+let knownOrderIds = new Set();
+let firstLoad = true;
+
+auth.onAuthStateChanged(user=>{
+  if (user){
+    document.getElementById("loginView").style.display = "none";
+    document.getElementById("loginAwning").style.display = "none";
+    document.getElementById("boardView").style.display = "block";
+    startListeners();
+    requestWakeLock();
+  } else {
+    document.getElementById("loginView").style.display = "block";
+    document.getElementById("boardView").style.display = "none";
+    stopListeners();
+  }
+});
+
+function startListeners(){
+  menuUnsub = db.collection("menu").onSnapshot(snap=>{
+    menuById = {};
+    snap.docs.forEach(d=>{ menuById[d.id] = d.data(); });
+  });
+
+  ordersUnsub = db.collection("orders")
+    .where("status","in",["new","confirmed"])
+    .onSnapshot(snap=>{
+      updateConnDot(snap.metadata.fromCache);
+      const orders = snap.docs.map(d=>({id:d.id, ...d.data()}));
+      orders.sort((a,b)=>(a.createdAt?.toMillis?.()||0) - (b.createdAt?.toMillis?.()||0));
+
+      if (firstLoad){
+        orders.forEach(o=>knownOrderIds.add(o.id));
+        firstLoad = false;
+      } else {
+        const newlyArrived = orders.filter(o=>o.status==="new" && !knownOrderIds.has(o.id));
+        if (newlyArrived.length){
+          if (soundOn) playBeep();
+          newlyArrived.forEach(o=>knownOrderIds.add(o.id));
+        }
+        orders.forEach(o=>knownOrderIds.add(o.id));
+      }
+
+      renderBoard(orders, snap);
+    }, err=>{
+      updateConnDot(true);
+    });
+}
+function stopListeners(){
+  if (menuUnsub) menuUnsub();
+  if (ordersUnsub) ordersUnsub();
+  firstLoad = true;
+  knownOrderIds = new Set();
+}
+
+function updateConnDot(offline){
+  document.getElementById("connDot").classList.toggle("offline", !!offline);
+  document.getElementById("connText").textContent = offline ? "Reconnecting..." : "Live";
+}
+
+function ageMinutes(ts){
+  if (!ts || !ts.toMillis) return 0;
+  return Math.floor((Date.now() - ts.toMillis()) / 60000);
+}
+function ageClass(mins){
+  if (mins >= 20) return "danger";
+  if (mins >= 10) return "warn";
+  return "";
+}
+function clockTime(ts){
+  if (!ts || !ts.toDate) return "";
+  return ts.toDate().toLocaleTimeString([], {hour:"2-digit", minute:"2-digit"});
+}
+
+function orderCardHtml(o, isNewSection){
+  const mins = ageMinutes(o.createdAt);
+  const itemsHtml = (o.items||[]).map(it=>{
+    const live = menuById[Object.keys(menuById).find(k=>menuById[k].name===it.name)];
+    const mismatch = live && live.price !== it.price;
+    return `<div class="item-line"><span class="item-qty">${it.qty}x</span><span>${escapeHtml(it.name)}</span>${mismatch?'<span class="price-mismatch">price mismatch</span>':''}</div>`;
+  }).join("");
+  const noteHtml = o.note ? `<div class="note-box">${escapeHtml(o.note)}</div>` : "";
+  const btnLabel = isNewSection ? "Confirm order" : "Mark as ready";
+  return `<div class="card ${isNewSection?'new-card':''}" data-id="${o.id}" data-status="${o.status}">
+    <div class="card-top">
+      <div><h3 class="table-label">Table ${escapeHtml(o.table||"?")}</h3><div class="clock-time">${clockTime(o.createdAt)}</div></div>
+      <span class="age-chip ${ageClass(mins)}">${mins} min</span>
+    </div>
+    <div class="items-list">${itemsHtml}</div>
+    ${noteHtml}
+    <div class="card-total">${rupee(o.total||0)}</div>
+    <button class="confirm-btn" data-action="${isNewSection?'confirm':'ready'}" data-id="${o.id}">${btnLabel}</button>
+  </div>`;
+}
+
+let renderedIds = new Set();
+function renderBoard(orders, snap){
+  const newOrders = orders.filter(o=>o.status==="new");
+  const prepOrders = orders.filter(o=>o.status==="confirmed");
+
+  document.getElementById("newCount").textContent = newOrders.length;
+  document.getElementById("prepCount").textContent = prepOrders.length;
+  document.getElementById("newEmpty").style.display = newOrders.length ? "none":"block";
+  document.getElementById("prepEmpty").style.display = prepOrders.length ? "none":"block";
+
+  document.getElementById("newGrid").innerHTML = newOrders.map(o=>orderCardHtml(o,true)).join("");
+  document.getElementById("prepGrid").innerHTML = prepOrders.map(o=>orderCardHtml(o,false)).join("");
+
+  document.querySelectorAll(".confirm-btn").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      btn.disabled = true;
+      const id = btn.dataset.id;
+      const action = btn.dataset.action;
+      try{
+        const update = action==="confirm"
+          ? { status:"confirmed", confirmedAt: firebase.firestore.FieldValue.serverTimestamp() }
+          : { status:"done", doneAt: firebase.firestore.FieldValue.serverTimestamp() };
+        await db.collection("orders").doc(id).update(update);
+      } catch(err){
+        if (err.code === "permission-denied") showToast("You've been signed out. Please sign in again.");
+        else showToast("Could not update order.");
+        btn.disabled = false;
+      }
+    });
+  });
+
+  // flash newly arrived cards
+  orders.forEach(o=>{
+    if (o.status==="new" && !renderedIds.has(o.id) && !firstLoad){
+      const el = document.querySelector(`.card[data-id="${o.id}"]`);
+      if (el) el.classList.add("flash");
+    }
+  });
+  renderedIds = new Set(orders.map(o=>o.id));
+
+  document.title = (newOrders.length ? `(${newOrders.length}) ` : "") + "Kitchen orders";
+}
+
+setInterval(()=>{
+  document.querySelectorAll(".card").forEach(card=>{
+    // age chips refresh on next snapshot naturally; light re-render every 30s
+  });
+}, 30000);
+// force a re-render every 30s so age chips/colors update even without new snapshots
+setInterval(()=>{
+  document.querySelectorAll(".age-chip").forEach(()=>{});
+}, 30000);
+
+// ---------- sound ----------
+document.getElementById("soundBtn").addEventListener("click", ()=>{
+  soundOn = !soundOn;
+  const btn = document.getElementById("soundBtn");
+  btn.textContent = soundOn ? "Sound on" : "Sound off";
+  btn.classList.toggle("sound-on", soundOn);
+  if (soundOn) playBeep(); // unlock audio on user gesture
+});
+function playBeep(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [880, 1175].forEach((freq, i)=>{
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.frequency.value = freq;
+      osc.connect(gain); gain.connect(ctx.destination);
+      gain.gain.setValueAtTime(0.15, ctx.currentTime + i*0.15);
+      osc.start(ctx.currentTime + i*0.15);
+      osc.stop(ctx.currentTime + i*0.15 + 0.14);
+    });
+  } catch(e){}
+}
+
+// ---------- wake lock ----------
+let wakeLock = null;
+async function requestWakeLock(){
+  try{
+    if ("wakeLock" in navigator){
+      wakeLock = await navigator.wakeLock.request("screen");
+    }
+  } catch(e){}
+}
+document.addEventListener("visibilitychange", ()=>{
+  if (document.visibilityState === "visible" && auth.currentUser) requestWakeLock();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#1e4a3b">
+<title>Menu manager - Swadanusar Cafe</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --oat:#f6f1e6; --paper:#fffdf8; --ink:#211d1a; --muted:#6d6357; --line:#e2d8bf;
+    --green:#15120f; --green-dark:#0a0908; --butter:#c8a24d; --butter-light:#ecdcae;
+    --bad:#a13327; --veg:#2c7a4b;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--oat);color:var(--ink);font-family:'Figtree',system-ui,sans-serif;}
+  h1,h2,h3,.display{font-family:'Playfair Display','Figtree',system-ui,sans-serif;}
+  button{font-family:inherit;}
+  @media (prefers-reduced-motion: reduce){ *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
+  :focus-visible{outline:3px solid var(--green-dark); outline-offset:2px;}
+  .awning{height:14px; background:radial-gradient(circle at 14px 0, var(--green) 13.6px, transparent 14px) 0 0/28px 14px repeat-x;}
+
+  .login-hero{background:var(--green); color:var(--oat); min-height:100vh; padding:60px 20px 0;}
+  .login-card{background:var(--paper); color:var(--ink); border-radius:18px; padding:24px 20px; margin:24px auto 0; max-width:360px;}
+  .login-title{font-size:24px; margin:0 0 4px; text-align:center; color:var(--butter);}
+  .login-sub{text-align:center; font-size:13px; opacity:.85; margin-bottom:18px;}
+  .field-label{font-size:13px; font-weight:700; display:block; margin:14px 0 6px;}
+  .field-input, .field-select, .field-textarea{width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line); font-size:16px; color:var(--ink); background:#fff;}
+  .field-textarea{resize:vertical; min-height:60px;}
+  .btn-primary{width:100%; background:var(--green); color:var(--oat); border:none; border-radius:14px; padding:14px; font-weight:700; font-size:16px; min-height:48px; cursor:pointer; margin-top:18px;}
+  .btn-primary:disabled{opacity:.6;}
+  .error-text.on-card{color:var(--bad); font-size:13px; margin-top:10px; text-align:center;}
+
+  .header{background:var(--green); color:var(--oat); padding:16px;}
+  .header-title{color:var(--butter); font-size:22px; margin:0;}
+  .tabs{display:flex; gap:8px; margin-top:14px;}
+  .tab{flex:1; text-align:center; padding:10px; border-radius:999px; background:rgba(255,255,255,.12); color:var(--oat); text-decoration:none; font-weight:700; font-size:13px;}
+  .tab.active{background:var(--butter); color:var(--green-dark);}
+
+  .toolbar{padding:16px 16px 0;}
+  .search-row{display:flex; gap:8px;}
+  .search-box{flex:1; padding:12px 14px; border-radius:14px; border:1px solid var(--line); background:var(--paper); font-size:16px;}
+  .add-btn{background:var(--green); color:var(--oat); border:none; border-radius:14px; padding:0 18px; font-weight:700; min-height:44px; cursor:pointer; white-space:nowrap;}
+  .export-btn{background:transparent; border:1.5px solid var(--green); color:var(--green); border-radius:999px; padding:8px 14px; font-size:12px; font-weight:700; cursor:pointer; margin-top:10px;}
+  .chips-row{display:flex; gap:8px; overflow-x:auto; margin-top:12px; padding-bottom:4px; scrollbar-width:none;}
+  .chips-row::-webkit-scrollbar{display:none;}
+  .filter-chip{flex:0 0 auto; padding:7px 14px; border-radius:999px; border:1px solid var(--line); background:var(--paper); font-size:13px; font-weight:600; cursor:pointer;}
+  .filter-chip.active{background:var(--green); color:var(--oat); border-color:var(--green);}
+
+  .cat-panel{margin:16px; background:var(--paper); border:1px solid var(--line); border-radius:16px; padding:4px;}
+  .cat-panel-header{display:flex; justify-content:space-between; align-items:center; padding:10px 12px;}
+  .cat-panel-title{font-weight:700; font-size:14px;}
+  .cat-row{display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-top:1px solid var(--line); font-size:13px;}
+  .cat-row-name{font-weight:600;}
+  .cat-row-count{color:var(--muted); font-size:11px;}
+  .cat-row-actions{display:flex; gap:6px; align-items:center;}
+  .icon-btn{background:none; border:1px solid var(--line); border-radius:8px; width:30px; height:30px; cursor:pointer; font-size:14px;}
+  .small-btn{background:none; border:1px solid var(--line); border-radius:999px; padding:5px 10px; font-size:11px; cursor:pointer; font-weight:700;}
+  .add-cat-row{display:flex; gap:6px; padding:10px 12px;}
+  .add-cat-row input{flex:1; padding:8px 10px; border-radius:10px; border:1px solid var(--line); font-size:14px;}
+
+  .category-block{padding:0 16px;}
+  .category-heading{font-size:16px; margin:20px 0 8px;}
+  .dish-row{display:flex; align-items:center; gap:10px; background:var(--paper); border:1px solid var(--line); border-radius:14px; padding:10px; margin-bottom:8px;}
+  .dish-thumb{width:52px; height:52px; border-radius:10px; object-fit:cover; background:var(--line); flex:0 0 auto;}
+  .dish-thumb-tile{width:52px; height:52px; border-radius:10px; background:var(--line); flex:0 0 auto; display:flex; align-items:center; justify-content:center; font-size:11px; color:var(--muted); text-align:center;}
+  .dish-tap{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; cursor:pointer;}
+  .dish-name-line{display:flex; align-items:center; gap:6px; font-weight:700; font-size:14px;}
+  .veg-marker{width:12px; height:12px; border:1.5px solid var(--veg); border-radius:3px; flex:0 0 auto;}
+  .veg-marker.non-veg{border-color:var(--bad);}
+  .flag{font-size:10px; font-weight:700; padding:1px 6px; border-radius:999px; background:var(--butter-light); color:#6b4e12;}
+  .flag.warn{background:#fde3dc; color:var(--bad);}
+  .dish-price{font-size:12px; color:var(--muted);}
+  .switch{position:relative; width:44px; height:26px; flex:0 0 auto;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider{position:absolute; inset:0; background:var(--line); border-radius:999px; cursor:pointer; transition:.15s;}
+  .slider::before{content:""; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s;}
+  .switch input:checked + .slider{background:var(--veg);}
+  .switch input:checked + .slider::before{transform:translateX(18px);}
+  .veg-set-row{display:flex; gap:6px; margin-top:4px;}
+
+  .sheet-backdrop{position:fixed; inset:0; background:rgba(20,15,10,.45); z-index:30; display:none;}
+  .sheet-backdrop.open{display:block;}
+  .sheet{position:fixed; left:0; right:0; bottom:0; background:var(--paper); border-radius:20px 20px 0 0; max-height:90vh; overflow-y:auto; z-index:31; transform:translateY(100%); transition:transform .22s ease; padding:18px 16px calc(18px + env(safe-area-inset-bottom));}
+  .sheet.open{transform:translateY(0);}
+  .sheet-handle{width:40px; height:4px; background:var(--line); border-radius:999px; margin:0 auto 14px;}
+  .sheet-title{font-size:20px; margin:0 0 12px;}
+  .photo-preview{width:100%; height:160px; border-radius:14px; background:var(--line); object-fit:cover; margin-bottom:8px;}
+  .photo-btns{display:flex; gap:8px; margin-bottom:6px;}
+  .photo-btns button{flex:1; padding:9px; border-radius:10px; border:1px solid var(--line); background:#fff; font-size:12px; font-weight:700; cursor:pointer;}
+  .segmented{display:flex; gap:8px; margin-top:6px;}
+  .segmented button{flex:1; padding:10px; border-radius:10px; border:1.5px solid var(--line); background:#fff; font-weight:700; font-size:13px; cursor:pointer;}
+  .segmented button.selected.veg{border-color:var(--veg); background:#eaf6ee;}
+  .segmented button.selected.nonveg{border-color:var(--bad); background:#fdeceb;}
+  .switch-row{display:flex; align-items:center; justify-content:space-between; margin-top:16px;}
+  .btn-danger{width:100%; background:transparent; color:var(--bad); border:1.5px solid var(--bad); border-radius:14px; padding:12px; font-weight:700; font-size:14px; min-height:44px; cursor:pointer; margin-top:10px;}
+  .btn-secondary{width:100%; background:transparent; color:var(--green); border:1.5px solid var(--green); border-radius:14px; padding:12px; font-weight:700; font-size:14px; min-height:44px; cursor:pointer; margin-top:8px;}
+
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--ink); color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; z-index:40; opacity:0; transition:opacity .2s ease;}
+  .toast.show{opacity:1;}
+  .empty-state{text-align:center; color:var(--muted); padding:40px 20px; font-size:14px;}
+</style>
+</head>
+<body>
+
+<div id="loginView" class="login-hero">
+  <h1 class="login-title">Menu manager</h1>
+  <div class="login-card">
+    <p class="login-sub">Sign in to edit the menu.</p>
+    <label class="field-label" for="loginEmail">Email</label>
+    <input type="email" id="loginEmail" class="field-input" autocomplete="username">
+    <label class="field-label" for="loginPass">Password</label>
+    <input type="password" id="loginPass" class="field-input" autocomplete="current-password">
+    <button class="btn-primary" id="loginBtn">Sign in</button>
+    <p class="error-text on-card" id="loginError" style="display:none;"></p>
+  </div>
+</div>
+
+<div id="boardView" style="display:none;">
+  <div class="header">
+    <h1 class="header-title">Menu manager</h1>
+    <div class="tabs">
+      <a class="tab" href="chef.html">Orders</a>
+      <span class="tab active">Menu</span>
+    </div>
+  </div>
+  <div class="awning"></div>
+
+  <div class="toolbar">
+    <div class="search-row">
+      <input type="search" id="searchBox" class="search-box" placeholder="Search dishes...">
+      <button class="add-btn" id="addDishBtn">Add dish</button>
+    </div>
+    <button class="export-btn" id="exportBtn">Export menu</button>
+    <div class="chips-row" id="filterChips"></div>
+  </div>
+
+  <div class="cat-panel">
+    <div class="cat-panel-header"><span class="cat-panel-title">Categories</span></div>
+    <div id="catRows"></div>
+    <div class="add-cat-row">
+      <input type="text" id="newCatInput" placeholder="New category name">
+      <button class="small-btn" id="addCatBtn">Add</button>
+    </div>
+  </div>
+
+  <div id="dishList"></div>
+</div>
+
+<div class="sheet-backdrop" id="sheetBackdrop"></div>
+<div class="sheet" id="editSheet" role="dialog" aria-modal="true">
+  <div class="sheet-handle"></div>
+  <h2 class="sheet-title" id="sheetTitleText">Add dish</h2>
+  <img id="photoPreview" class="photo-preview" style="display:none;">
+  <div id="photoTilePreview" class="dish-thumb-tile" style="width:100%; height:160px; border-radius:14px; margin-bottom:8px;">No photo</div>
+  <input type="file" id="photoInput" accept="image/*" style="display:none;">
+  <div class="photo-btns">
+    <button id="choosePhotoBtn" type="button">Choose photo</button>
+    <button id="removePhotoBtn" type="button">Remove photo</button>
+  </div>
+
+  <label class="field-label" for="nameInput">Name</label>
+  <input type="text" id="nameInput" class="field-input">
+
+  <label class="field-label" for="priceInput">Price (Rs)</label>
+  <input type="number" id="priceInput" class="field-input" min="0" step="1">
+
+  <label class="field-label">Veg or non-veg</label>
+  <div class="segmented" id="vegSegment">
+    <button type="button" data-val="true" class="veg">Veg</button>
+    <button type="button" data-val="false" class="nonveg">Non-veg</button>
+  </div>
+
+  <label class="field-label" for="categorySelect">Category</label>
+  <select id="categorySelect" class="field-select"></select>
+
+  <label class="field-label" for="descInput">Description</label>
+  <textarea id="descInput" class="field-textarea"></textarea>
+
+  <label class="field-label" for="tagInput">Tag (optional)</label>
+  <input type="text" id="tagInput" class="field-input" placeholder="e.g. Bestseller">
+
+  <div class="switch-row">
+    <span class="field-label" style="margin:0;">Available today</span>
+    <label class="switch"><input type="checkbox" id="availableInput" checked><span class="slider"></span></label>
+  </div>
+
+  <label class="field-label" for="orderInput">Position number (optional)</label>
+  <input type="number" id="orderInput" class="field-input">
+
+  <button class="btn-primary" id="saveBtn">Save</button>
+  <button class="btn-danger" id="deleteBtn" style="display:none;">Delete dish</button>
+  <button class="btn-secondary" id="cancelBtn">Cancel</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAldqc9pTZhF7I3XdDZaSWlgz7PAoOYHV8",
+  authDomain: "swadanusar-web.firebaseapp.com",
+  projectId: "swadanusar-web",
+  storageBucket: "swadanusar-web.firebasestorage.app",
+  messagingSenderId: "931212374660",
+  appId: "1:931212374660:web:b1ecb8735d36e37f43c8d1"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+function rupee(n){ return "Rs " + Math.round(n); }
+function showToast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 2200);
+}
+function slugify(str){
+  return String(str).toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || ("item-" + Date.now());
+}
+
+// ---------- login ----------
+document.getElementById("loginBtn").addEventListener("click", async ()=>{
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPass").value;
+  const errEl = document.getElementById("loginError");
+  errEl.style.display = "none";
+  const btn = document.getElementById("loginBtn");
+  btn.disabled = true; btn.textContent = "Signing in...";
+  try{
+    await auth.signInWithEmailAndPassword(email, pass);
+  } catch(err){
+    let msg = "Something went wrong. Please try again.";
+    if (!navigator.onLine) msg = "No internet connection.";
+    else if (["auth/wrong-password","auth/user-not-found","auth/invalid-credential","auth/invalid-email"].includes(err.code)) msg = "Wrong email or password.";
+    errEl.textContent = msg;
+    errEl.style.display = "block";
+  } finally {
+    btn.disabled = false; btn.textContent = "Sign in";
+  }
+});
+
+let categories = [];
+let dishes = [];
+let activeFilter = "all";
+let searchTerm = "";
+let catsUnsub = null, dishesUnsub = null;
+
+auth.onAuthStateChanged(user=>{
+  if (user){
+    document.getElementById("loginView").style.display = "none";
+    document.getElementById("boardView").style.display = "block";
+    startListeners();
+  } else {
+    document.getElementById("loginView").style.display = "block";
+    document.getElementById("boardView").style.display = "none";
+    if (catsUnsub) catsUnsub();
+    if (dishesUnsub) dishesUnsub();
+  }
+});
+
+function startListeners(){
+  catsUnsub = db.collection("categories").orderBy("order").onSnapshot(snap=>{
+    categories = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderCatPanel();
+    renderCategorySelect();
+    renderDishList();
+  });
+  dishesUnsub = db.collection("menu").onSnapshot(snap=>{
+    dishes = snap.docs.map(d=>({id:d.id, ...d.data()}));
+    renderFilterChips();
+    renderDishList();
+  });
+}
+
+// ---------- categories panel ----------
+function renderCatPanel(){
+  const wrap = document.getElementById("catRows");
+  wrap.innerHTML = categories.map((c,i)=>{
+    const count = dishes.filter(d=>d.category===c.id).length;
+    return `<div class="cat-row">
+      <div><div class="cat-row-name">${escapeHtml(c.name)}</div><div class="cat-row-count">${count} dish${count===1?'':'es'}</div></div>
+      <div class="cat-row-actions">
+        <button class="icon-btn" data-move="up" data-idx="${i}" ${i===0?'disabled':''}>&#8593;</button>
+        <button class="icon-btn" data-move="down" data-idx="${i}" ${i===categories.length-1?'disabled':''}>&#8595;</button>
+        <button class="icon-btn" data-rename="${c.id}">&#9998;</button>
+        <button class="icon-btn" data-delcat="${c.id}">&#128465;</button>
+      </div>
+    </div>`;
+  }).join("") || `<div class="cat-row"><span class="cat-row-count">No categories yet — add one below.</span></div>`;
+
+  wrap.querySelectorAll("[data-move]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const idx = parseInt(btn.dataset.idx);
+      const dir = btn.dataset.move;
+      const otherIdx = dir==="up" ? idx-1 : idx+1;
+      if (otherIdx < 0 || otherIdx >= categories.length) return;
+      const a = categories[idx], b = categories[otherIdx];
+      try{
+        const batch = db.batch();
+        batch.update(db.collection("categories").doc(a.id), {order: b.order});
+        batch.update(db.collection("categories").doc(b.id), {order: a.order});
+        await batch.commit();
+      } catch(e){ showToast("Could not reorder."); }
+    });
+  });
+  wrap.querySelectorAll("[data-rename]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const cat = categories.find(c=>c.id===btn.dataset.rename);
+      const name = prompt("Rename category", cat.name);
+      if (!name || !name.trim()) return;
+      try{ await db.collection("categories").doc(cat.id).update({name: name.trim()}); }
+      catch(e){ showToast("Could not rename."); }
+    });
+  });
+  wrap.querySelectorAll("[data-delcat]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      const id = btn.dataset.delcat;
+      const inUse = dishes.some(d=>d.category===id);
+      if (inUse){ showToast("Move or delete its dishes first — this category is still in use."); return; }
+      if (!confirm("Delete this category?")) return;
+      try{ await db.collection("categories").doc(id).delete(); showToast("Category deleted."); }
+      catch(e){ showToast("Could not delete."); }
+    });
+  });
+}
+document.getElementById("addCatBtn").addEventListener("click", async ()=>{
+  const input = document.getElementById("newCatInput");
+  const name = input.value.trim();
+  if (!name) return;
+  const id = slugify(name);
+  const maxOrder = categories.reduce((m,c)=>Math.max(m, c.order||0), 0);
+  try{
+    await db.collection("categories").doc(id).set({name, order: maxOrder+1});
+    input.value = "";
+    showToast("Category added.");
+  } catch(e){ showToast("Could not add category."); }
+});
+
+// ---------- filter chips ----------
+function renderFilterChips(){
+  const counts = {
+    all: dishes.length,
+    nophoto: dishes.filter(d=>!d.image).length,
+    vegunset: dishes.filter(d=>d.veg===undefined).length,
+    soldout: dishes.filter(d=>d.available===false).length
+  };
+  const defs = [
+    {k:"all", label:"All"},
+    {k:"nophoto", label:"No photo"},
+    {k:"vegunset", label:"Veg not set"},
+    {k:"soldout", label:"Sold out"}
+  ];
+  const wrap = document.getElementById("filterChips");
+  wrap.innerHTML = defs.filter(d=>d.k==="all" || counts[d.k]>0).map(d=>
+    `<button class="filter-chip ${activeFilter===d.k?'active':''}" data-f="${d.k}">${d.label} (${counts[d.k]})</button>`
+  ).join("");
+  wrap.querySelectorAll(".filter-chip").forEach(chip=>{
+    chip.addEventListener("click", ()=>{ activeFilter = chip.dataset.f; renderFilterChips(); renderDishList(); });
+  });
+}
+document.getElementById("searchBox").addEventListener("input", e=>{
+  searchTerm = e.target.value.toLowerCase();
+  renderDishList();
+});
+
+// ---------- dish list ----------
+function renderDishList(){
+  let filtered = dishes.filter(d=>{
+    if (activeFilter==="nophoto" && d.image) return false;
+    if (activeFilter==="vegunset" && d.veg!==undefined) return false;
+    if (activeFilter==="soldout" && d.available!==false) return false;
+    if (searchTerm && !(d.name||"").toLowerCase().includes(searchTerm)) return false;
+    return true;
+  });
+  filtered.sort((a,b)=>(a.order??999)-(b.order??999));
+
+  const wrap = document.getElementById("dishList");
+  if (dishes.length===0){
+    wrap.innerHTML = '<div class="empty-state">No dishes yet. Tap "Add dish" to create your first one.</div>';
+    return;
+  }
+  if (filtered.length===0){
+    wrap.innerHTML = '<div class="empty-state">No dishes match.</div>';
+    return;
+  }
+
+  let html = "";
+  const cats = categories.filter(c=>filtered.some(d=>d.category===c.id));
+  const noCatDishes = filtered.filter(d=>!categories.some(c=>c.id===d.category));
+  cats.forEach(c=>{
+    html += `<div class="category-block"><h2 class="category-heading">${escapeHtml(c.name)}</h2>`;
+    filtered.filter(d=>d.category===c.id).forEach(d=> html += dishRowHtml(d));
+    html += `</div>`;
+  });
+  if (noCatDishes.length){
+    html += `<div class="category-block"><h2 class="category-heading">Uncategorised</h2>`;
+    noCatDishes.forEach(d=> html += dishRowHtml(d));
+    html += `</div>`;
+  }
+  wrap.innerHTML = html;
+  attachDishHandlers();
+}
+
+function dishRowHtml(d){
+  const thumb = d.image
+    ? `<img class="dish-thumb" src="${d.image}">`
+    : `<div class="dish-thumb-tile">No photo</div>`;
+  let vegRow = "";
+  let vegMarker = "";
+  if (d.veg===true) vegMarker = '<span class="veg-marker"></span>';
+  else if (d.veg===false) vegMarker = '<span class="veg-marker non-veg"></span>';
+  else vegRow = `<div class="veg-set-row"><button class="small-btn" data-quickveg="${d.id}" data-val="true">Veg</button><button class="small-btn" data-quickveg="${d.id}" data-val="false">Non-veg</button></div>`;
+  const noPhotoFlag = !d.image ? '<span class="flag warn">No photo</span>' : "";
+  const tagFlag = d.tag ? `<span class="flag">${escapeHtml(d.tag)}</span>` : "";
+  return `<div class="dish-row">
+    <div class="dish-tap" data-edit="${d.id}">${thumb}</div>
+    <div class="dish-tap" data-edit="${d.id}" style="flex:1;">
+      <div class="dish-name-line">${vegMarker}${escapeHtml(d.name||"")}${noPhotoFlag}${tagFlag}</div>
+      <div class="dish-price">${rupee(d.price||0)}</div>
+      ${vegRow}
+    </div>
+    <label class="switch"><input type="checkbox" data-avail="${d.id}" ${d.available!==false?'checked':''}><span class="slider"></span></label>
+  </div>`;
+}
+
+function attachDishHandlers(){
+  document.querySelectorAll("[data-edit]").forEach(el=>{
+    el.addEventListener("click", ()=> openEditSheet(dishes.find(d=>d.id===el.dataset.edit)));
+  });
+  document.querySelectorAll("[data-avail]").forEach(sw=>{
+    sw.addEventListener("change", async ()=>{
+      try{ await db.collection("menu").doc(sw.dataset.avail).update({available: sw.checked}); }
+      catch(e){ showToast("Could not update."); sw.checked = !sw.checked; }
+    });
+  });
+  document.querySelectorAll("[data-quickveg]").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
+      try{ await db.collection("menu").doc(btn.dataset.quickveg).update({veg: btn.dataset.val==="true"}); }
+      catch(e){ showToast("Could not update."); }
+    });
+  });
+}
+
+// ---------- edit sheet ----------
+let editingId = null;
+let pendingImage = null; // data URL or null(unchanged) or "" (removed)
+
+function renderCategorySelect(){
+  const sel = document.getElementById("categorySelect");
+  sel.innerHTML = categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+}
+
+function openEditSheet(dish){
+  editingId = dish ? dish.id : null;
+  pendingImage = null;
+  document.getElementById("sheetTitleText").textContent = dish ? "Edit dish" : "Add dish";
+  document.getElementById("nameInput").value = dish?.name || "";
+  document.getElementById("priceInput").value = dish?.price ?? "";
+  document.getElementById("descInput").value = dish?.description || "";
+  document.getElementById("tagInput").value = dish?.tag || "";
+  document.getElementById("availableInput").checked = dish?.available !== false;
+  document.getElementById("orderInput").value = dish?.order ?? "";
+  document.getElementById("categorySelect").value = dish?.category || (categories[0]?.id || "");
+  document.getElementById("deleteBtn").style.display = dish ? "block" : "none";
+
+  document.querySelectorAll("#vegSegment button").forEach(b=>{
+    b.classList.toggle("selected", dish && String(dish.veg)===b.dataset.val);
+  });
+
+  if (dish?.image){
+    document.getElementById("photoPreview").src = dish.image;
+    document.getElementById("photoPreview").style.display = "block";
+    document.getElementById("photoTilePreview").style.display = "none";
+  } else {
+    document.getElementById("photoPreview").style.display = "none";
+    document.getElementById("photoTilePreview").style.display = "flex";
+  }
+
+  document.getElementById("sheetBackdrop").classList.add("open");
+  document.getElementById("editSheet").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeEditSheet(){
+  document.getElementById("sheetBackdrop").classList.remove("open");
+  document.getElementById("editSheet").classList.remove("open");
+  document.body.style.overflow = "";
+}
+document.getElementById("addDishBtn").addEventListener("click", ()=> openEditSheet(null));
+document.getElementById("cancelBtn").addEventListener("click", closeEditSheet);
+document.getElementById("sheetBackdrop").addEventListener("click", closeEditSheet);
+
+document.querySelectorAll("#vegSegment button").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    document.querySelectorAll("#vegSegment button").forEach(b=>b.classList.remove("selected"));
+    btn.classList.add("selected");
+  });
+});
+
+document.getElementById("choosePhotoBtn").addEventListener("click", ()=> document.getElementById("photoInput").click());
+document.getElementById("photoInput").addEventListener("change", async e=>{
+  const file = e.target.files[0];
+  if (!file) return;
+  try{
+    const dataUrl = await resizeImage(file, 520, 140000);
+    pendingImage = dataUrl;
+    document.getElementById("photoPreview").src = dataUrl;
+    document.getElementById("photoPreview").style.display = "block";
+    document.getElementById("photoTilePreview").style.display = "none";
+  } catch(e){ showToast("Could not process that photo."); }
+});
+document.getElementById("removePhotoBtn").addEventListener("click", ()=>{
+  pendingImage = "";
+  document.getElementById("photoPreview").style.display = "none";
+  document.getElementById("photoTilePreview").style.display = "flex";
+});
+
+function resizeImage(file, maxSide, maxChars){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if (w > h && w > maxSide){ h = Math.round(h*maxSide/w); w = maxSide; }
+        else if (h > maxSide){ w = Math.round(w*maxSide/h); h = maxSide; }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        let quality = 0.85;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        while (dataUrl.length > maxChars && quality > 0.3){
+          quality -= 0.1;
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById("saveBtn").addEventListener("click", async ()=>{
+  const name = document.getElementById("nameInput").value.trim();
+  const price = parseInt(document.getElementById("priceInput").value, 10);
+  const vegBtn = document.querySelector("#vegSegment button.selected");
+  const category = document.getElementById("categorySelect").value;
+  const description = document.getElementById("descInput").value.trim();
+  const tag = document.getElementById("tagInput").value.trim();
+  const available = document.getElementById("availableInput").checked;
+  const orderRaw = document.getElementById("orderInput").value;
+  const order = orderRaw === "" ? 999 : parseInt(orderRaw, 10);
+
+  if (!name){ showToast("Please enter a dish name."); return; }
+  if (isNaN(price) || price < 0){ showToast("Please enter a valid price."); return; }
+  if (!editingId && !vegBtn){ showToast("Please choose Veg or Non-veg."); return; }
+  if (!category){ showToast("Please add a category first."); return; }
+
+  const data = { name, price, category, description, available, order };
+  if (tag) data.tag = tag; else data.tag = firebase.firestore.FieldValue.delete();
+  if (vegBtn) data.veg = vegBtn.dataset.val === "true";
+  if (pendingImage !== null) data.image = pendingImage;
+
+  const btn = document.getElementById("saveBtn");
+  btn.disabled = true; btn.textContent = "Saving...";
+  try{
+    if (editingId){
+      await db.collection("menu").doc(editingId).update(data);
+      showToast("Dish saved.");
+    } else {
+      const slug = slugify(name);
+      const existing = await db.collection("menu").doc(slug).get();
+      if (existing.exists){
+        showToast("A dish with this name already exists. Please use a different name.");
+        btn.disabled = false; btn.textContent = "Save";
+        return;
+      }
+      await db.collection("menu").doc(slug).set(data);
+      showToast("Dish added.");
+    }
+    closeEditSheet();
+  } catch(e){
+    showToast(e.code==="permission-denied" ? "Signed out — please sign in again." : "Could not save.");
+  } finally {
+    btn.disabled = false; btn.textContent = "Save";
+  }
+});
+
+document.getElementById("deleteBtn").addEventListener("click", async ()=>{
+  if (!editingId) return;
+  if (!confirm("Delete this dish? This cannot be undone.")) return;
+  try{
+    await db.collection("menu").doc(editingId).delete();
+    showToast("Dish deleted.");
+    closeEditSheet();
+  } catch(e){ showToast("Could not delete."); }
+});
+
+// ---------- export ----------
+document.getElementById("exportBtn").addEventListener("click", async ()=>{
+  try{
+    const backup = { exportedAt: new Date().toISOString(), categories, menu: dishes };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const stamp = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `swadanusar-menu-backup-${stamp}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  } catch(e){ showToast("Could not export."); }
+});
+</script>
+</body>
+</html>
